@@ -2,9 +2,9 @@ import { AppShell } from "@mantine/core";
 import React, { useState } from "react";
 import Header from "./header";
 import Navbar from "./navbar";
+import ModelLibrary from "../Model-library/model-library";
 
 const BaseApp = () => {
-    // const [navbarOpen, setNavbarOpen] = useState(false);
     const [screenState, setScreenState] = useState<ScreenNav>("modellibrary");
 
     return (
@@ -24,11 +24,12 @@ const BaseApp = () => {
                     screenState={screenState}
                     onNav={(val) => {
                         setScreenState(val);
-                        // setNavbarOpen(false);
                     }}
                 ></Navbar>
             </AppShell.Navbar>
-            <AppShell.Main bg={"#f8fafc"}></AppShell.Main>
+            <AppShell.Main bg={"#f8fafc"} m={"sm"}>
+                {screenState === "modellibrary" ? <ModelLibrary></ModelLibrary> : null}
+            </AppShell.Main>
         </AppShell>
     );
 };
