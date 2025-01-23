@@ -4,6 +4,7 @@ import {
     Button,
     Group,
     Modal,
+    Pagination,
     Paper,
     Select,
     Stack,
@@ -21,8 +22,9 @@ import {
     IconSearch,
 } from "@tabler/icons-react";
 import React, { useState } from "react";
+import { dummyModels } from "../../Types/dummyData";
 
-interface Model {
+export interface Model {
     name: string;
     type: string;
     llm: string;
@@ -33,7 +35,7 @@ interface Model {
 }
 
 const ModelLibrary = () => {
-    const [models, setModels] = useState<Model[]>([]);
+    const [models, setModels] = useState<Model[]>(dummyModels);
     const [modelOpened, setModalOpened] = useState(false);
     const [newModel, setNewModel] = useState<Model>({
         name: "",
@@ -45,12 +47,33 @@ const ModelLibrary = () => {
         status: "",
     });
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [searchQuery, setSearchQuery] = useState("");
+
+    const rowsPerPage = 8;
+    const firstRowIndex = (currentPage - 1) * rowsPerPage;
+    const lastRowIndex = currentPage * rowsPerPage;
+
+    // const currentPageModels = models.slice( firstRowIndex, lastRowIndex );
+
+    const filteredModels = models.filter((model) =>
+        model.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const currentPageModels = filteredModels.slice(
+        (currentPage - 1) * rowsPerPage,
+        currentPage * rowsPerPage
+    );
+
+    const totalPages = Math.ceil(filteredModels.length / rowsPerPage);
+
     const modalChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setNewModel((prev) => ({ ...prev, [name]: value }));
     };
 
     const modalSubmit = () => {
+        console.log(newModel);
         setModels((prev) => [
             ...prev,
             {
@@ -102,6 +125,8 @@ const ModelLibrary = () => {
                         bg={"#f9fafb"}
                         placeholder="Search by Name, ID"
                         leftSection={<IconSearch />}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                     />
                     <Button w={140} leftSection={<IconFilter />} bg={"#F9FAFB"} c={"#767676"}>
                         Filters
@@ -137,7 +162,7 @@ const ModelLibrary = () => {
                         </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
-                        {models.map((item, index) => (
+                        {currentPageModels.map((item, index) => (
                             <Table.Tr key={index}>
                                 <Table.Td ta={"center"}>{item.name}</Table.Td>
                                 <Table.Td ta={"center"}>{item.type}</Table.Td>
@@ -158,6 +183,23 @@ const ModelLibrary = () => {
                         ))}
                     </Table.Tbody>
                 </Table>
+                <Group justify="space-between" mt="md" mx={64}>
+                    <Text>
+                        Showing {firstRowIndex + 1} to {Math.min(lastRowIndex, models.length)} of{" "}
+                        {models.length} results
+                    </Text>
+                    <Pagination
+                        radius={"xl"}
+                        size={"sm"}
+                        total={totalPages}
+                        value={currentPage}
+                        onChange={setCurrentPage}
+                        siblings={5}
+                        withControls
+                        withEdges
+                        color={"#4f46e5"}
+                    />
+                </Group>
                 <Modal
                     opened={modelOpened}
                     onClose={() => setModalOpened(false)}
